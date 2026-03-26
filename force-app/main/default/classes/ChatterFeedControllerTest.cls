@@ -135,6 +135,49 @@ private class ChatterFeedControllerTest {
     }
 
     // =========================================================================
+    // toggleLike テスト
+    // =========================================================================
+
+    @IsTest
+    static void testToggleLike_like() {
+        Account acc = [SELECT Id FROM Account LIMIT 1];
+        FeedItem fi = [SELECT Id FROM FeedItem WHERE ParentId = :acc.Id LIMIT 1];
+
+        Test.startTest();
+        Map<String, Object> result = ChatterFeedController.toggleLike(fi.Id, false);
+        Test.stopTest();
+
+        System.assertEquals(true, result.get('liked'), 'いいね後は liked=true が返されるべき');
+        System.assertNotEquals(null, result.get('likeCount'), 'likeCount が返されるべき');
+    }
+
+    @IsTest
+    static void testToggleLike_unlike() {
+        Account acc = [SELECT Id FROM Account LIMIT 1];
+        FeedItem fi = [SELECT Id FROM FeedItem WHERE ParentId = :acc.Id LIMIT 1];
+
+        insert new FeedLike(FeedItemId = fi.Id);
+
+        Test.startTest();
+        Map<String, Object> result = ChatterFeedController.toggleLike(fi.Id, true);
+        Test.stopTest();
+
+        System.assertEquals(false, result.get('liked'), 'いいね解除後は liked=false が返されるべき');
+    }
+
+    @IsTest
+    static void testToggleLike_blankFeedItemId_throwsException() {
+        Test.startTest();
+        try {
+            ChatterFeedController.toggleLike('', false);
+            System.assert(false, '例外が発生するべき');
+        } catch (AuraHandledException e) {
+            System.assert(e.getMessage().contains('feedItemId'), 'エラーメッセージに feedItemId が含まれるべき');
+        }
+        Test.stopTest();
+    }
+
+    // =========================================================================
     // フィールド値の検証テスト
     // =========================================================================
 

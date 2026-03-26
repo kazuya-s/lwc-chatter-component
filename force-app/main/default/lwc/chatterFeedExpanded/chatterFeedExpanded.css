@@ -114,6 +114,34 @@
     --slds-c-feed-body-overflow: visible;
 }
 
+/* いいねボタン */
+.like-button {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    color: var(--lwc-colorTextWeak, #706e6b);
+    font-size: 0.8125rem;
+    line-height: 1;
+}
+
+.like-button:hover {
+    color: var(--lwc-colorTextActionActive, #0176d3);
+}
+
+.like-button_liked {
+    color: var(--lwc-colorTextActionActive, #0176d3);
+    font-weight: 700;
+}
+
+.like-button:disabled {
+    opacity: 0.5;
+    cursor: default;
+}
+
 /* フッター */
 .slds-post__footer-actions {
     display: flex;
