@@ -2,6 +2,7 @@ import { LightningElement, api, track, wire } from 'lwc';
 import { CurrentPageReference } from 'lightning/navigation';
 import getRecordFeed from '@salesforce/apex/ChatterFeedController.getRecordFeed';
 import getPublicFeed from '@salesforce/apex/ChatterFeedController.getPublicFeed';
+import toggleLike from '@salesforce/apex/ChatterFeedController.toggleLike';
 import getComments from '@salesforce/apex/ChatterFeedController.getComments';
 
 export default class ChatterFeedExpanded extends LightningElement {
@@ -48,6 +49,9 @@ export default class ChatterFeedExpanded extends LightningElement {
             const mapped = items.map(item => ({
                 ...item,
                 createdDate: item.createdDate ? new Date(item.createdDate).toISOString() : null,
+                isLiked: item.isLiked === true,
+                isLiking: false,
+                likeButtonClass: item.isLiked ? 'like-button like-button_liked' : 'like-button',
                 comments: [],
                 showComments: false
             }));
@@ -89,6 +93,53 @@ export default class ChatterFeedExpanded extends LightningElement {
 
     get hasError() {
         return !this.isLoading && !!this.errorMessage;
+    }
+
+    async handleLike(event) {
+        const feedItemId = event.currentTarget.dataset.id;
+        const item = this.feedItems.find(i => i.id === feedItemId);
+        if (!item || item.isLiking) return;
+
+        const nextLiked = !item.isLiked;
+
+        // 楽観的UI更新
+        this.feedItems = this.feedItems.map(i => {
+            if (i.id !== feedItemId) return i;
+            return {
+                ...i,
+                isLiking: true,
+                isLiked: nextLiked,
+                likeCount: nextLiked ? i.likeCount + 1 : i.likeCount - 1,
+                likeButtonClass: nextLiked ? 'like-button like-button_liked' : 'like-button'
+            };
+        });
+
+        try {
+            const result = await toggleLike({ feedItemId, currentlyLiked: item.isLiked });
+            this.feedItems = this.feedItems.map(i => {
+                if (i.id !== feedItemId) return i;
+                return {
+                    ...i,
+                    isLiking: false,
+                    isLiked: result.liked,
+                    likeCount: result.likeCount,
+                    likeButtonClass: result.liked ? 'like-button like-button_liked' : 'like-button'
+                };
+            });
+        } catch (error) {
+            // 失敗時はロールバック
+            this.feedItems = this.feedItems.map(i => {
+                if (i.id !== feedItemId) return i;
+                return {
+                    ...i,
+                    isLiking: false,
+                    isLiked: item.isLiked,
+                    likeCount: item.likeCount,
+                    likeButtonClass: item.isLiked ? 'like-button like-button_liked' : 'like-button'
+                };
+            });
+            console.error('[ChatterFeedExpanded] Error toggling like:', error);
+        }
     }
 
     /** 再読み込みボタン用（将来の拡張） */

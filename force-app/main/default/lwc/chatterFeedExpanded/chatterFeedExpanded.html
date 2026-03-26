@@ -109,13 +109,22 @@
                                 <footer class="slds-post__footer">
                                     <ul class="slds-post__footer-actions">
                                         <li class="slds-post__footer-action">
-                                            <lightning-icon
-                                                icon-name="utility:like"
-                                                size="x-small"
-                                                class="slds-m-right_xx-small"
-                                                alternative-text="いいね"
-                                            ></lightning-icon>
-                                            <span>{item.likeCount}</span>
+                                            <button
+                                                class={item.likeButtonClass}
+                                                onclick={handleLike}
+                                                data-id={item.id}
+                                                disabled={item.isLiking}
+                                                aria-label="いいね"
+                                                aria-pressed={item.isLiked}
+                                            >
+                                                <lightning-icon
+                                                    icon-name="utility:like"
+                                                    size="x-small"
+                                                    class="slds-m-right_xx-small"
+                                                    alternative-text="いいね"
+                                                ></lightning-icon>
+                                                <span>{item.likeCount}</span>
+                                            </button>
                                         </li>
                                         <li class="slds-post__footer-action">
                                             <lightning-icon

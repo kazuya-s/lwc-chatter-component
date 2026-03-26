@@ -13,9 +13,11 @@ public with sharing class ChatterFeedController {
         }
         Integer size = (pageSize != null && pageSize > 0) ? pageSize : 25;
 
+        String userId = UserInfo.getUserId();
         List<FeedItem> items = [
             SELECT Id, CreatedById, CreatedBy.Name, Body, CommentCount, LikeCount,
-                   CreatedDate, LastModifiedDate
+                   CreatedDate, LastModifiedDate,
+                   (SELECT Id FROM FeedLikes WHERE InsertedById = :userId)
             FROM FeedItem
             WHERE ParentId = :recordId
             ORDER BY LastModifiedDate DESC
@@ -34,9 +36,11 @@ public with sharing class ChatterFeedController {
     public static List<Map<String, Object>> getPublicFeed(Integer pageSize) {
         Integer size = (pageSize != null && pageSize > 0) ? pageSize : 25;
 
+        String userId = UserInfo.getUserId();
         List<FeedItem> items = [
             SELECT Id, CreatedById, CreatedBy.Name, Body, CommentCount, LikeCount,
-                   CreatedDate, LastModifiedDate
+                   CreatedDate, LastModifiedDate,
+                   (SELECT Id FROM FeedLikes WHERE InsertedById = :userId)
             FROM FeedItem
             ORDER BY LastModifiedDate DESC
             LIMIT :size
@@ -45,6 +49,42 @@ public with sharing class ChatterFeedController {
         return convertFeedItems(items);
     }
 
+    /**
+     * フィード投稿のいいねをトグルする（いいね ⇔ いいね解除）
+     * @param feedItemId 対象FeedItemのId
+     * @param currentlyLiked 現在いいね済みかどうか（クライアントから渡す）
+     * @return { liked: Boolean, likeCount: Integer }
+     */
+    @AuraEnabled
+    public static Map<String, Object> toggleLike(String feedItemId, Boolean currentlyLiked) {
+        if (String.isBlank(feedItemId)) {
+            throw new AuraHandledException('feedItemId は必須です');
+        }
+
+        String userId = UserInfo.getUserId();
+        Boolean isNowLiked;
+
+        if (currentlyLiked == true) {
+            FeedItem fi = [
+                SELECT Id, (SELECT Id FROM FeedLikes WHERE InsertedById = :userId)
+                FROM FeedItem WHERE Id = :feedItemId LIMIT 1
+            ];
+            if (!fi.FeedLikes.isEmpty()) {
+                delete fi.FeedLikes;
+            }
+            isNowLiked = false;
+        } else {
+            insert new FeedLike(FeedItemId = feedItemId);
+            isNowLiked = true;
+        }
+
+        FeedItem updated = [SELECT LikeCount FROM FeedItem WHERE Id = :feedItemId LIMIT 1];
+        return new Map<String, Object>{
+            'liked' => isNowLiked,
+            'likeCount' => updated.LikeCount
+        };
+    }
+    
     /**
      * フィードアイテムに紐づくコメントを取得する
      * @param feedItemId 対象FeedItemのId
@@ -96,6 +136,7 @@ public with sharing class ChatterFeedController {
             feedItem.put('body', item.Body != null ? item.Body : '');
             feedItem.put('commentCount', item.CommentCount);
             feedItem.put('likeCount', item.LikeCount);
+            feedItem.put('isLiked', !item.FeedLikes.isEmpty());
             result.add(feedItem);
         }
 
