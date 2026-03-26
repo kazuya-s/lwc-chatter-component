@@ -71,6 +71,40 @@
                                     <lightning-formatted-rich-text value={item.body}></lightning-formatted-rich-text>
                                 </div>
 
+                                <!-- コメント一覧 -->
+                                <template lwc:if={item.comments.length}>
+                                    <ul class="comment-list">
+                                        <template for:each={item.comments} for:item="comment">
+                                            <li key={comment.id} class="comment-item slds-media">
+                                                <div class="slds-media__figure">
+                                                    <lightning-icon
+                                                        icon-name="standard:user"
+                                                        size="small"
+                                                        alternative-text={comment.actorName}
+                                                    ></lightning-icon>
+                                                </div>
+                                                <div class="slds-media__body">
+                                                    <div class="comment-header">
+                                                        <span class="comment-actor-name">{comment.actorName}</span>
+                                                        <lightning-formatted-date-time
+                                                            value={comment.createdDate}
+                                                            year="numeric"
+                                                            month="short"
+                                                            day="numeric"
+                                                            hour="2-digit"
+                                                            minute="2-digit"
+                                                            class="comment-date"
+                                                        ></lightning-formatted-date-time>
+                                                    </div>
+                                                    <div class="comment-body">
+                                                        <lightning-formatted-rich-text value={comment.body}></lightning-formatted-rich-text>
+                                                    </div>
+                                                </div>
+                                            </li>
+                                        </template>
+                                    </ul>
+                                </template>
+
                                 <!-- フッター（コメント数・いいね数） -->
                                 <footer class="slds-post__footer">
                                     <ul class="slds-post__footer-actions">

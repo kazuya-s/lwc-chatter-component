@@ -84,6 +84,40 @@ public with sharing class ChatterFeedController {
             'likeCount' => updated.LikeCount
         };
     }
+    
+    /**
+     * フィードアイテムに紐づくコメントを取得する
+     * @param feedItemId 対象FeedItemのId
+     * @param pageSize 取得件数（デフォルト: 25）
+     * @return コメントのリスト
+     */
+    @AuraEnabled(cacheable=true)
+    public static List<Map<String, Object>> getComments(String feedItemId, Integer pageSize) {
+        if (String.isBlank(feedItemId)) {
+            throw new AuraHandledException('feedItemId は必須です');
+        }
+        Integer size = (pageSize != null && pageSize > 0) ? pageSize : 25;
+
+        List<FeedComment> comments = [
+            SELECT Id, CreatedById, CreatedBy.Name, CommentBody, CreatedDate
+            FROM FeedComment
+            WHERE FeedItemId = :feedItemId
+            ORDER BY CreatedDate ASC
+            LIMIT :size
+        ];
+
+        List<Map<String, Object>> result = new List<Map<String, Object>>();
+        for (FeedComment comment : comments) {
+            Map<String, Object> c = new Map<String, Object>();
+            c.put('id', comment.Id);
+            c.put('createdDate', comment.CreatedDate);
+            c.put('actorId', comment.CreatedById);
+            c.put('actorName', comment.CreatedBy.Name);
+            c.put('body', comment.CommentBody != null ? comment.CommentBody : '');
+            result.add(c);
+        }
+        return result;
+    }
 
     /**
      * FeedItem リストをLWCで扱いやすいMap形式に変換する
