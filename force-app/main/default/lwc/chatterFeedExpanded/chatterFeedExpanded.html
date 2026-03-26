@@ -105,6 +105,38 @@
                                     </ul>
                                 </template>
 
+                                <!-- 返信入力エリア -->
+                                <div class="reply-box slds-media">
+                                    <div class="slds-media__figure">
+                                        <lightning-icon
+                                            icon-name="standard:user"
+                                            size="small"
+                                            alternative-text="あなた"
+                                        ></lightning-icon>
+                                    </div>
+                                    <div class="slds-media__body">
+                                        <lightning-textarea
+                                            label=""
+                                            placeholder="返信を入力..."
+                                            value={item.replyBody}
+                                            data-id={item.id}
+                                            onchange={handleReplyInput}
+                                        ></lightning-textarea>
+                                        <template lwc:if={item.replyError}>
+                                            <p class="reply-error">{item.replyError}</p>
+                                        </template>
+                                        <div class="reply-actions">
+                                            <lightning-button
+                                                label="コメント"
+                                                variant="brand"
+                                                data-id={item.id}
+                                                onclick={handleReplySubmit}
+                                                disabled={item.isPosting}
+                                            ></lightning-button>
+                                        </div>
+                                    </div>
+                                </div>
+
                                 <!-- フッター（コメント数・いいね数） -->
                                 <footer class="slds-post__footer">
                                     <ul class="slds-post__footer-actions">
@@ -118,13 +150,20 @@
                                             <span>{item.likeCount}</span>
                                         </li>
                                         <li class="slds-post__footer-action">
-                                            <lightning-icon
-                                                icon-name="utility:comments"
-                                                size="x-small"
-                                                class="slds-m-right_xx-small"
-                                                alternative-text="コメント"
-                                            ></lightning-icon>
-                                            <span>{item.commentCount}</span>
+                                            <button
+                                                class="reply-button"
+                                                data-id={item.id}
+                                                onclick={handleReplyClick}
+                                                aria-label="返信"
+                                            >
+                                                <lightning-icon
+                                                    icon-name="utility:comments"
+                                                    size="x-small"
+                                                    class="slds-m-right_xx-small"
+                                                    alternative-text="返信"
+                                                ></lightning-icon>
+                                                <span>{item.commentCount}</span>
+                                            </button>
                                         </li>
                                     </ul>
                                 </footer>

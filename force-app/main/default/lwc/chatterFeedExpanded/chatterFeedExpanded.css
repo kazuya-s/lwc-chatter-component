@@ -157,6 +157,44 @@
     line-height: var(--lwc-lineHeightText, 1.5);
 }
 
+/* 返信ボタン */
+.reply-button {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    color: var(--lwc-colorTextWeak, #706e6b);
+    font-size: 0.8125rem;
+    line-height: 1;
+}
+
+.reply-button:hover {
+    color: var(--lwc-colorTextActionActive, #0176d3);
+}
+
+/* 返信入力エリア */
+.reply-box {
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--lwc-colorBorderSeparator, #dddbda);
+    align-items: flex-start;
+}
+
+.reply-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 0.5rem;
+}
+
+.reply-error {
+    color: var(--lwc-colorTextError, #c23934);
+    font-size: 0.8125rem;
+    margin-top: 0.25rem;
+}
+
 /* フッター */
 .slds-post__footer-actions {
     display: flex;

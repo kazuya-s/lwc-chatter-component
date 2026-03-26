@@ -3,6 +3,7 @@ import { CurrentPageReference } from 'lightning/navigation';
 import getRecordFeed from '@salesforce/apex/ChatterFeedController.getRecordFeed';
 import getPublicFeed from '@salesforce/apex/ChatterFeedController.getPublicFeed';
 import getComments from '@salesforce/apex/ChatterFeedController.getComments';
+import postComment from '@salesforce/apex/ChatterFeedController.postComment';
 
 export default class ChatterFeedExpanded extends LightningElement {
     /** レコードページで自動設定されるレコードId */
@@ -89,6 +90,64 @@ export default class ChatterFeedExpanded extends LightningElement {
 
     get hasError() {
         return !this.isLoading && !!this.errorMessage;
+    }
+
+    handleReplyClick(event) {
+        const feedItemId = event.currentTarget.dataset.id;
+        this.feedItems = this.feedItems.map(item =>
+            item.id === feedItemId
+                ? { ...item, showReplyBox: !item.showReplyBox, replyBody: '', replyError: null }
+                : item
+        );
+    }
+
+    handleReplyInput(event) {
+        const feedItemId = event.currentTarget.dataset.id;
+        const value = event.target.value;
+        this.feedItems = this.feedItems.map(item =>
+            item.id === feedItemId ? { ...item, replyBody: value } : item
+        );
+    }
+
+    async handleReplySubmit(event) {
+        const feedItemId = event.currentTarget.dataset.id;
+        const item = this.feedItems.find(i => i.id === feedItemId);
+        if (!item || !item.replyBody || !item.replyBody.trim()) return;
+
+        this.feedItems = this.feedItems.map(i =>
+            i.id === feedItemId ? { ...i, isPosting: true, replyError: null } : i
+        );
+
+        try {
+            const newComment = await postComment({ feedItemId, body: item.replyBody.trim() });
+            const mapped = {
+                ...newComment,
+                createdDate: newComment.createdDate ? new Date(newComment.createdDate).toISOString() : null
+            };
+            this.feedItems = this.feedItems.map(i => {
+                if (i.id !== feedItemId) return i;
+                return {
+                    ...i,
+                    comments: [...i.comments, mapped],
+                    commentCount: i.commentCount + 1,
+                    showReplyBox: false,
+                    replyBody: '',
+                    isPosting: false
+                };
+            });
+        } catch (error) {
+            const msg = error.body ? error.body.message : 'コメントの投稿に失敗しました。';
+            this.feedItems = this.feedItems.map(i =>
+                i.id === feedItemId ? { ...i, isPosting: false, replyError: msg } : i
+            );
+        }
+    }
+
+    handleReplyCancel(event) {
+        const feedItemId = event.currentTarget.dataset.id;
+        this.feedItems = this.feedItems.map(item =>
+            item.id === feedItemId ? { ...item, showReplyBox: false, replyBody: '', replyError: null } : item
+        );
     }
 
     /** 再読み込みボタン用（将来の拡張） */
