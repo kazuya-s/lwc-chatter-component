@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>59.0</apiVersion>
+    <isExposed>true</isExposed>
+    <masterLabel>Chatter Feed（全文表示）</masterLabel>
+    <description>Chatterの投稿を折りたたまずにすべて表示するコンポーネントです。モバイルアプリでも動作します。</description>
+    <targets>
+        <target>lightning__RecordPage</target>
+        <target>lightning__AppPage</target>
+        <target>lightning__HomePage</target>
+        <target>lightningCommunity__Page</target>
+    </targets>
+    <targetConfigs>
+        <targetConfig targets="lightning__RecordPage">
+            <property
+                name="pageSize"
+                type="Integer"
+                label="表示件数"
+                description="1ページに表示するChatter投稿の最大件数"
+                default="25"
+                min="5"
+                max="100"
+            />
+        </targetConfig>
+        <targetConfig targets="lightning__AppPage,lightning__HomePage">
+            <property
+                name="useGlobalFeed"
+                type="Boolean"
+                label="グローバルフィードを表示"
+                description="ONにするとグローバルChatterフィードを表示します（OFFはレコードフィード）"
+                default="true"
+            />
+            <property
+                name="pageSize"
+                type="Integer"
+                label="表示件数"
+                description="1ページに表示するChatter投稿の最大件数"
+                default="25"
+                min="5"
+                max="100"
+            />
+        </targetConfig>
+    </targetConfigs>
+</LightningComponentBundle>

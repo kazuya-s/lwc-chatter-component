@@ -1,0 +1,132 @@
+/* =============================================================================
+   chatterFeedExpanded.css
+   Chatter投稿の全文表示スタイル（折りたたみ無効化）
+   ============================================================================= */
+
+/* ローディング */
+.loading-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 120px;
+}
+
+/* 空状態 */
+.empty-state {
+    min-height: 120px;
+    padding: 2rem 0;
+}
+
+/* フィードリスト */
+.feed-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.feed-item {
+    margin-bottom: 0.5rem;
+}
+
+/* 投稿者アバター */
+.actor-photo {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.actor-name {
+    font-weight: 700;
+    color: var(--lwc-colorTextDefault, #181818);
+}
+
+/* =============================================================================
+   本文エリア - 折りたたみ無効化の核心部分
+   標準Chatterの -webkit-line-clamp による折りたたみを完全に無効化する
+   ============================================================================= */
+.feed-body {
+    /* 折りたたみ無効化 */
+    -webkit-line-clamp: unset !important;
+    line-clamp: unset !important;
+
+    /* テキストの切り詰め無効化 */
+    overflow: visible !important;
+    text-overflow: clip !important;
+
+    /* 高さ制限の解除 */
+    max-height: none !important;
+    height: auto !important;
+
+    /* 表示モードの明示 */
+    display: block !important;
+    -webkit-box-orient: unset !important;
+}
+
+.feed-text {
+    /* 全文表示 */
+    -webkit-line-clamp: unset !important;
+    line-clamp: unset !important;
+    overflow: visible !important;
+    max-height: none !important;
+    height: auto !important;
+
+    /* 改行・空白の保持 */
+    white-space: pre-wrap;
+    word-break: break-word;
+    overflow-wrap: break-word;
+
+    /* テキストスタイル */
+    color: var(--lwc-colorTextDefault, #181818);
+    font-size: 0.875rem;
+    line-height: var(--lwc-lineHeightText, 1.5);
+
+    /* マージン */
+    margin: 0;
+    padding: 0;
+}
+
+/* =============================================================================
+   モバイル対応
+   ============================================================================= */
+@media (max-width: 768px) {
+    .actor-photo {
+        width: 32px;
+        height: 32px;
+    }
+
+    .feed-text {
+        font-size: 0.9375rem; /* モバイルでやや大きめ */
+        line-height: 1.6;
+    }
+
+    .slds-post__footer-action {
+        font-size: 0.8125rem;
+    }
+}
+
+/* =============================================================================
+   Salesforceモバイルアプリ (S1) 対応
+   モバイルアプリ固有の折りたたみスタイルを上書き
+   ============================================================================= */
+:host {
+    --slds-c-feed-body-line-clamp: unset;
+    --slds-c-feed-body-overflow: visible;
+}
+
+/* フッター */
+.slds-post__footer-actions {
+    display: flex;
+    gap: 1rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.slds-post__footer-action {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    color: var(--lwc-colorTextWeak, #706e6b);
+    font-size: 0.8125rem;
+}

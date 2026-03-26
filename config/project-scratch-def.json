@@ -1,0 +1,16 @@
+{
+  "orgName": "Chatter Expanded Dev",
+  "edition": "Developer",
+  "features": [],
+  "settings": {
+    "chatterSettings": {
+      "enableChatter": true
+    },
+    "mobileSettings": {
+      "enableS1EncryptedStoragePref2": false
+    },
+    "lightningExperienceSettings": {
+      "enableS1DesktopEnabled": true
+    }
+  }
+}
