@@ -2,6 +2,7 @@ import { LightningElement, api, track, wire } from 'lwc';
 import { CurrentPageReference } from 'lightning/navigation';
 import getRecordFeed from '@salesforce/apex/ChatterFeedController.getRecordFeed';
 import getPublicFeed from '@salesforce/apex/ChatterFeedController.getPublicFeed';
+import getComments from '@salesforce/apex/ChatterFeedController.getComments';
 
 export default class ChatterFeedExpanded extends LightningElement {
     /** レコードページで自動設定されるレコードId */
@@ -44,10 +45,19 @@ export default class ChatterFeedExpanded extends LightningElement {
                 });
             }
 
-            this.feedItems = items.map(item => ({
+            const mapped = items.map(item => ({
                 ...item,
-                createdDate: item.createdDate ? new Date(item.createdDate).toISOString() : null
+                createdDate: item.createdDate ? new Date(item.createdDate).toISOString() : null,
+                comments: [],
+                showComments: false
             }));
+            this.feedItems = mapped;
+
+            // コメントがある投稿のコメントを並行取得
+            const commentLoads = mapped
+                .filter(item => item.commentCount > 0)
+                .map(item => this.loadComments(item.id));
+            await Promise.all(commentLoads);
         } catch (error) {
             this.errorMessage = error.body
                 ? error.body.message
@@ -55,6 +65,21 @@ export default class ChatterFeedExpanded extends LightningElement {
             console.error('[ChatterFeedExpanded] Error loading feed:', error);
         } finally {
             this.isLoading = false;
+        }
+    }
+
+    async loadComments(feedItemId) {
+        try {
+            const comments = await getComments({ feedItemId, pageSize: 50 });
+            const mapped = comments.map(c => ({
+                ...c,
+                createdDate: c.createdDate ? new Date(c.createdDate).toISOString() : null
+            }));
+            this.feedItems = this.feedItems.map(item =>
+                item.id === feedItemId ? { ...item, comments: mapped } : item
+            );
+        } catch (error) {
+            console.error('[ChatterFeedExpanded] Error loading comments:', feedItemId, error);
         }
     }
 

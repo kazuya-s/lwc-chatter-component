@@ -135,6 +135,86 @@ private class ChatterFeedControllerTest {
     }
 
     // =========================================================================
+    // getComments テスト
+    // =========================================================================
+
+    @IsTest
+    static void testGetComments_success() {
+        Account acc = [SELECT Id FROM Account LIMIT 1];
+        FeedItem fi = [SELECT Id FROM FeedItem WHERE ParentId = :acc.Id LIMIT 1];
+
+        // コメントを追加
+        insert new FeedComment(FeedItemId = fi.Id, CommentBody = 'テストコメント1');
+        insert new FeedComment(FeedItemId = fi.Id, CommentBody = 'テストコメント2');
+
+        Test.startTest();
+        List<Map<String, Object>> result = ChatterFeedController.getComments(fi.Id, 25);
+        Test.stopTest();
+
+        System.assertNotEquals(null, result, '結果がnullであってはならない');
+        System.assertEquals(2, result.size(), '2件のコメントが返されるべき');
+
+        Map<String, Object> first = result[0];
+        System.assertNotEquals(null, first.get('id'), 'IDが設定されているべき');
+        System.assertNotEquals(null, first.get('actorName'), '投稿者名が設定されているべき');
+        System.assertEquals('テストコメント1', first.get('body'), 'コメント本文が正しく返されるべき');
+    }
+
+    @IsTest
+    static void testGetComments_withDefaultPageSize() {
+        Account acc = [SELECT Id FROM Account LIMIT 1];
+        FeedItem fi = [SELECT Id FROM FeedItem WHERE ParentId = :acc.Id LIMIT 1];
+
+        Test.startTest();
+        List<Map<String, Object>> result = ChatterFeedController.getComments(fi.Id, null);
+        Test.stopTest();
+
+        System.assertNotEquals(null, result, '結果がnullであってはならない');
+    }
+
+    @IsTest
+    static void testGetComments_withPageSizeLimit() {
+        Account acc = [SELECT Id FROM Account LIMIT 1];
+        FeedItem fi = [SELECT Id FROM FeedItem WHERE ParentId = :acc.Id LIMIT 1];
+
+        insert new FeedComment(FeedItemId = fi.Id, CommentBody = 'コメントA');
+        insert new FeedComment(FeedItemId = fi.Id, CommentBody = 'コメントB');
+        insert new FeedComment(FeedItemId = fi.Id, CommentBody = 'コメントC');
+
+        Test.startTest();
+        List<Map<String, Object>> result = ChatterFeedController.getComments(fi.Id, 2);
+        Test.stopTest();
+
+        System.assertEquals(2, result.size(), '件数制限が反映されるべき');
+    }
+
+    @IsTest
+    static void testGetComments_blankFeedItemId_throwsException() {
+        Test.startTest();
+        try {
+            ChatterFeedController.getComments('', 25);
+            System.assert(false, '例外が発生するべき');
+        } catch (AuraHandledException e) {
+            System.assert(e.getMessage().contains('feedItemId'), 'エラーメッセージに feedItemId が含まれるべき');
+        }
+        Test.stopTest();
+    }
+
+    @IsTest
+    static void testGetComments_nullBody_returnsEmptyString() {
+        Account acc = [SELECT Id FROM Account LIMIT 1];
+        FeedItem fi = [SELECT Id FROM FeedItem WHERE ParentId = :acc.Id LIMIT 1];
+        insert new FeedComment(FeedItemId = fi.Id, CommentBody = null);
+
+        Test.startTest();
+        List<Map<String, Object>> result = ChatterFeedController.getComments(fi.Id, 25);
+        Test.stopTest();
+
+        System.assertEquals(1, result.size(), '1件返されるべき');
+        System.assertEquals('', result[0].get('body'), 'bodyがnullの場合は空文字列が返されるべき');
+    }
+
+    // =========================================================================
     // フィールド値の検証テスト
     // =========================================================================
 
