@@ -68,7 +68,7 @@
 
                                 <!-- 本文（全文表示・折りたたみなし） -->
                                 <div class="slds-post__content feed-body">
-                                    <p class="feed-text">{item.body}</p>
+                                    <lightning-formatted-rich-text value={item.body}></lightning-formatted-rich-text>
                                 </div>
 
                                 <!-- フッター（コメント数・いいね数） -->
