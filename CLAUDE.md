@@ -14,6 +14,14 @@ ScratchOrgを使用して開発・テスト・デプロイを行います。
 - 完了した計画は `plan/finish/` に移動する
 - 複数のClaudeが並列作業できるよう、計画は適切に分割する
 
+### ブランチ戦略
+- 新機能開発は必ず最新の `main` ブランチからfeatureブランチを切り出して作業を開始する
+  ```bash
+  git checkout main && git pull origin main
+  git checkout -b feature/<feature-name>
+  ```
+- 作業完了後は GitHub PR を作成して main にマージする
+
 ### 並列作業ルール
 - Phase 2（Apex）と Phase 3（LWC）は Phase 1 完了後、並列実行可能
 - Phase 4（デプロイ確認）は Phase 2・3 の両方が完了してから実施
